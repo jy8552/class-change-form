@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>수업 변경신청서</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+      background: #f4f5f7;
+      margin: 0;
+      padding: 24px 16px 80px;
+      color: #222;
+    }
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e3e3e6;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 12px 0 6px;
+      color: #444;
+    }
+    label:first-of-type { margin-top: 0; }
+    select, input[type=text], input[type=password], textarea {
+      width: 100%;
+      padding: 9px 10px;
+      font-size: 14px;
+      border: 1px solid #d4d4d8;
+      border-radius: 6px;
+      background: #fff;
+      font-family: inherit;
+    }
+    select:disabled, input:disabled {
+      background: #f0f0f1;
+      color: #888;
+    }
+    textarea { resize: vertical; min-height: 60px; }
+    .row { display: flex; gap: 10px; }
+    .row > div { flex: 1; }
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      border-radius: 6px;
+      border: none;
+      padding: 10px 16px;
+    }
+    .btn-primary {
+      background: #2f6fed;
+      color: #fff;
+      font-weight: 600;
+      width: 100%;
+    }
+    .btn-primary:disabled { background: #aac0ee; cursor: default; }
+    .btn-secondary {
+      background: #eef1f6;
+      color: #2f6fed;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 6px;
+    }
+    .subject-row {
+      position: relative;
+      border: 1px solid #e6e6ea;
+      border-radius: 8px;
+      padding: 18px 44px 16px 14px;
+      margin-bottom: 12px;
+      background: #fafbfc;
+    }
+    .row-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #f1f1f3;
+      color: #999;
+      font-size: 13px;
+      line-height: 1;
+      padding: 0;
+    }
+    .row-close-btn:hover { background: #e6e6ea; color: #555; }
+    .reason-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 13px;
+    }
+    .reason-item input { width: auto; }
+    .reason-item label { margin: 0; font-weight: 400; }
+    .reason-detail { margin: 4px 0 4px 22px; }
+    .error-msg {
+      color: #d23f3f;
+      font-size: 13px;
+      margin-top: 10px;
+      display: none;
+    }
+    .login-box {
+      max-width: 360px;
+      margin: 60px auto 0;
+    }
+    #doneScreen { display: none; text-align: center; padding: 60px 0; }
+    #doneScreen .icon { font-size: 40px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="login-box">
+      <div class="card">
+        <h2>수업 변경신청서</h2>
+        <label>아이디</label>
+        <input type="text" id="loginId">
+        <label>비밀번호</label>
+        <input type="password" id="loginPw">
+        <div class="error-msg" id="loginError">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+        <button class="btn-primary" style="margin-top:16px" onclick="login()" id="loginBtn">로그인</button>
+      </div>
+    </div>
+
+    <!-- 신청서 화면 -->
+    <div id="formScreen" style="display:none">
+      <h1>수업 변경신청서</h1>
+      <div class="subtitle">담임 → 학생 → 변경할 수업을 순차적으로 선택해주세요.</div>
+
+      <div class="card">
+        <h2>기본 정보</h2>
+        <label>담임선생님</label>
+        <select id="teacherSelect" onchange="onTeacherChange()">
+          <option value="">선택하세요</option>
+        </select>
+
+        <label>반</label>
+        <input type="text" id="classNameField" disabled placeholder="담임 선택 시 자동 입력됩니다">
+
+        <label>학생명</label>
+        <select id="studentSelect">
+          <option value="">반을 먼저 선택하세요</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <h2>수업 변경 내용</h2>
+        <div id="subjectList"></div>
+        <button class="btn-secondary" onclick="addSubjectRow()">+ 과목 추가</button>
+      </div>
+
+      <div class="card">
+        <h2>담임선생님 전달사항</h2>
+        <textarea id="commentField" placeholder="선택 입력"></textarea>
+      </div>
+
+      <div class="error-msg" id="submitError"></div>
+      <button class="btn-primary" onclick="submitForm()" id="submitBtn">제출하기</button>
+    </div>
+
+    <!-- 제출 완료 화면 -->
+    <div id="doneScreen">
+      <div class="icon">✅</div>
+      <h2>신청이 접수되었습니다</h2>
+      <p class="subtitle">같은 담임선생님으로 다른 학생을 추가 신청하려면 아래 버튼을 눌러주세요.</p>
+      <button class="btn-secondary" style="max-width:240px;margin:0 auto" onclick="resetForNext()">다음 신청 작성하기</button>
+    </div>
+
+  </div>
+
+  <script>
+    /* ====== 이 줄만 본인의 Apps Script 웹 앱 URL로 교체하세요 ====== */
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw8j1hhauFvYIeaQ6MDJa2AzV0bxVx8sjXrqKYkUpj9ZImW3u0kAuTpYjG2EITx1E6v/exec';
+    /* ============================================================ */
+
+    let masterData = { teachers: [], students: [], courses: [] };
+    let currentStudentList = [];
+    let subjectRowCount = 0;
+
+    const CATEGORIES = ['국어', '수학', '영어', '사회탐구', '과학탐구', '논술', '한국사', '기타'];
+    const REQUEST_TYPES = ['추가', '변경', '삭제'];
+    const REASONS = [
+      { value: '강의내용(쉬움)', detail: false },
+      { value: '강의내용(어려움)', detail: false },
+      { value: '강사불만', detail: true, placeholder: '상세 내용 (선택)' },
+      { value: '자습시간확보', detail: false },
+      { value: '기타', detail: true, placeholder: '상세 내용 입력' }
+    ];
+
+    /* ---------------- API 통신 ---------------- */
+    // POST는 Content-Type을 text/plain으로 보내야 Apps Script와의 CORS 문제가 생기지 않는다.
+    function apiPost(action, fields) {
+      const body = Object.assign({ action: action }, fields);
+      return fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(body)
+      }).then(function (res) { return res.text(); }).then(function (text) { return JSON.parse(text); });
+    }
+
+    function apiGetMaster() {
+      return fetch(API_URL + '?action=master').then(function (res) { return res.json(); });
+    }
+
+    /* ---------------- 로그인 ---------------- */
+    function login() {
+      const id = document.getElementById('loginId').value.trim();
+      const pw = document.getElementById('loginPw').value;
+      document.getElementById('loginBtn').disabled = true;
+      apiPost('login', { id: id, pw: pw })
+        .then(function (res) { onLoginResult(res.success); })
+        .catch(onServerError);
+    }
+
+    function onLoginResult(ok) {
+      document.getElementById('loginBtn').disabled = false;
+      if (!ok) {
+        document.getElementById('loginError').style.display = 'block';
+        return;
+      }
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('formScreen').style.display = 'block';
+      loadMasterData();
+    }
+
+    /* ---------------- 마스터데이터 로드 ---------------- */
+    function loadMasterData() {
+      apiGetMaster().then(onMasterData).catch(onServerError);
+    }
+
+    function onMasterData(data) {
+      masterData = data;
+
+      const teacherSelect = document.getElementById('teacherSelect');
+      const seen = {};
+      masterData.teachers.forEach(function (t) {
+        if (seen[t.teacherName]) return;
+        seen[t.teacherName] = true;
+        const opt = document.createElement('option');
+        opt.value = t.teacherName;
+        opt.textContent = t.teacherName;
+        teacherSelect.appendChild(opt);
+      });
+
+      addSubjectRow();
+    }
+
+    /* ---------------- 담임 → 반 → 학생 ---------------- */
+    function onTeacherChange() {
+      const teacherName = document.getElementById('teacherSelect').value;
+      const classField = document.getElementById('classNameField');
+      if (!teacherName) {
+        classField.value = '';
+        populateStudents('');
+        return;
+      }
+      const match = masterData.teachers.find(function (t) { return t.teacherName === teacherName; });
+      const className = match ? match.className : '';
+      classField.value = className;
+      populateStudents(className);
+    }
+
+    function populateStudents(className) {
+      const studentSelect = document.getElementById('studentSelect');
+      studentSelect.innerHTML = '';
+      currentStudentList = masterData.students.filter(function (s) { return s.className === className; });
+
+      if (!className) {
+        studentSelect.appendChild(new Option('반을 먼저 선택하세요', ''));
+        return;
+      }
+      studentSelect.appendChild(new Option('선택하세요', ''));
+      currentStudentList.forEach(function (s, i) {
+        studentSelect.appendChild(new Option(s.studentName, String(i)));
+      });
+    }
+
+    /* ---------------- 수업 변경 내용 (동적 행) ---------------- */
+    function addSubjectRow() {
+      subjectRowCount += 1;
+      const rowId = 'subjectRow_' + subjectRowCount;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'subject-row';
+      wrap.id = rowId;
+
+      wrap.innerHTML =
+        '<button class="row-close-btn" type="button" onclick="removeSubjectRow(\'' + rowId + '\')">\u2715</button>' +
+        '<label>신청구분</label><select class="f-type"></select>' +
+        '<label>과목분류</label><select class="f-category"></select>' +
+        '<div class="row">' +
+          '<div><label>변경 전 과목</label><select class="f-before"></select></div>' +
+          '<div><label>변경 후 과목</label><select class="f-after"></select></div>' +
+        '</div>' +
+        '<label style="margin-top:14px">변경사유</label>' +
+        '<div class="reason-list"></div>';
+
+      document.getElementById('subjectList').appendChild(wrap);
+
+      const categorySelect = wrap.querySelector('.f-category');
+      categorySelect.appendChild(new Option('선택하세요', ''));
+      CATEGORIES.forEach(function (c) { categorySelect.appendChild(new Option(c, c)); });
+      categorySelect.onchange = function () { onCategoryChange(wrap); };
+
+      const typeSelect = wrap.querySelector('.f-type');
+      typeSelect.appendChild(new Option('선택하세요', ''));
+      REQUEST_TYPES.forEach(function (t) { typeSelect.appendChild(new Option(t, t)); });
+      typeSelect.onchange = function () { onTypeChange(wrap); };
+
+      onCategoryChange(wrap);
+      onTypeChange(wrap);
+      renderReasonsInRow(wrap);
+    }
+
+    function removeSubjectRow(rowId) {
+      const el = document.getElementById(rowId);
+      if (el) el.remove();
+    }
+
+    function onCategoryChange(rowEl) {
+      const category = rowEl.querySelector('.f-category').value;
+      const courses = masterData.courses.filter(function (c) { return c.category === category; });
+      ['.f-before', '.f-after'].forEach(function (sel) {
+        const el = rowEl.querySelector(sel);
+        const prev = el.value;
+        el.innerHTML = '';
+        el.appendChild(new Option('선택하세요', ''));
+        courses.forEach(function (c) { el.appendChild(new Option(c.courseName, c.courseName)); });
+        if (courses.some(function (c) { return c.courseName === prev; })) el.value = prev;
+      });
+    }
+
+    function onTypeChange(rowEl) {
+      const type = rowEl.querySelector('.f-type').value;
+      const before = rowEl.querySelector('.f-before');
+      const after = rowEl.querySelector('.f-after');
+      before.disabled = (type === '추가');
+      after.disabled = (type === '삭제');
+      if (before.disabled) before.value = '';
+      if (after.disabled) after.value = '';
+    }
+
+    /* ---------------- 변경사유 (행마다 개별) ---------------- */
+    function renderReasonsInRow(rowEl) {
+      const wrap = rowEl.querySelector('.reason-list');
+      wrap.innerHTML = '';
+      REASONS.forEach(function (r, i) {
+        const cbId = rowEl.id + '_reason_' + i;
+        const item = document.createElement('div');
+        item.className = 'reason-item';
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = r.value;
+        cb.id = cbId;
+        cb.className = 'reason-checkbox';
+
+        const label = document.createElement('label');
+        label.setAttribute('for', cbId);
+        label.textContent = r.value;
+
+        item.appendChild(cb);
+        item.appendChild(label);
+        wrap.appendChild(item);
+
+        if (r.detail) {
+          const detailWrap = document.createElement('div');
+          detailWrap.className = 'reason-detail';
+          detailWrap.style.display = 'none';
+          const ta = document.createElement('textarea');
+          ta.className = 'reason-detail-input';
+          ta.dataset.for = r.value;
+          ta.placeholder = r.placeholder;
+          ta.style.minHeight = '40px';
+          detailWrap.appendChild(ta);
+          wrap.appendChild(detailWrap);
+          cb.onchange = function () { detailWrap.style.display = cb.checked ? 'block' : 'none'; };
+        }
+      });
+    }
+
+    function getRowReasons(rowEl) {
+      return Array.from(rowEl.querySelectorAll('.reason-checkbox'))
+        .filter(function (cb) { return cb.checked; })
+        .map(function (cb) { return cb.value; });
+    }
+
+    function getRowDetail(rowEl, reasonValue) {
+      const ta = rowEl.querySelector('.reason-detail-input[data-for="' + reasonValue + '"]');
+      return ta ? ta.value : '';
+    }
+
+    /* ---------------- 제출 ---------------- */
+    function submitForm() {
+      const errEl = document.getElementById('submitError');
+      errEl.style.display = 'none';
+
+      const teacherName = document.getElementById('teacherSelect').value;
+      const className = document.getElementById('classNameField').value;
+      const studentSelect = document.getElementById('studentSelect');
+      const studentIdx = studentSelect.value;
+
+      if (!teacherName) return showError('담임선생님을 선택해주세요.');
+      if (studentIdx === '') return showError('학생을 선택해주세요.');
+
+      const studentInfo = currentStudentList[Number(studentIdx)];
+
+      const subjectRows = Array.from(document.querySelectorAll('.subject-row'));
+      if (subjectRows.length === 0) return showError('변경할 과목을 한 개 이상 추가해주세요.');
+
+      const subjects = [];
+      for (const rowEl of subjectRows) {
+        const category = rowEl.querySelector('.f-category').value;
+        const type = rowEl.querySelector('.f-type').value;
+        const before = rowEl.querySelector('.f-before').value;
+        const after = rowEl.querySelector('.f-after').value;
+        if (!type) return showError('모든 과목 행의 신청구분을 선택해주세요.');
+        if (!category) return showError('모든 과목 행의 과목분류를 선택해주세요.');
+        if (type !== '추가' && !before) return showError('변경 전 과목을 선택해주세요.');
+        if (type !== '삭제' && !after) return showError('변경 후 과목을 선택해주세요.');
+
+        subjects.push({
+          category: category,
+          type: type,
+          before: before,
+          after: after,
+          reasons: getRowReasons(rowEl),
+          instructorComplaintDetail: getRowDetail(rowEl, '강사불만'),
+          etcDetail: getRowDetail(rowEl, '기타')
+        });
+      }
+
+      const payload = {
+        teacherName: teacherName,
+        className: className,
+        studentName: studentInfo.studentName,
+        studentId: studentInfo.studentId,
+        subjects: subjects,
+        comment: document.getElementById('commentField').value
+      };
+
+      document.getElementById('submitBtn').disabled = true;
+      apiPost('submit', payload)
+        .then(function (res) {
+          if (res.success) onSubmitSuccess(); else onSubmitError(res.error || '제출에 실패했습니다.');
+        })
+        .catch(onSubmitError);
+    }
+
+    function showError(msg) {
+      const errEl = document.getElementById('submitError');
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    }
+
+    function onSubmitSuccess() {
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('formScreen').style.display = 'none';
+      document.getElementById('doneScreen').style.display = 'block';
+    }
+
+    function onSubmitError(err) {
+      document.getElementById('submitBtn').disabled = false;
+      showError('제출 중 오류가 발생했습니다: ' + (err && err.message ? err.message : err));
+    }
+
+    function onServerError(err) {
+      alert('서버 통신 중 오류가 발생했습니다: ' + (err && err.message ? err.message : err));
+    }
+
+    /* ---------------- 다음 신청 작성 ---------------- */
+    function resetForNext() {
+      document.getElementById('doneScreen').style.display = 'none';
+      document.getElementById('formScreen').style.display = 'block';
+
+      document.getElementById('studentSelect').innerHTML = '<option value="">반을 먼저 선택하세요</option>';
+      document.getElementById('subjectList').innerHTML = '';
+      subjectRowCount = 0;
+      addSubjectRow();
+      document.getElementById('commentField').value = '';
+
+      onTeacherChange();
+    }
+  </script>
+</body>
+</html>
