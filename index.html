@@ -3,160 +3,247 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>수강과목 변경신청서</title>
+  <title>수업 변경신청서</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <style>
+    :root {
+      --brand-blue: #0076FE;
+      --brand-blue-dark: #0062D6;
+      --brand-blue-tint: #EAF2FF;
+      --ink: #0A0A0A;
+      --canvas: #F3F5F8;
+      --surface: #FFFFFF;
+      --text: #16181D;
+      --text-muted: #6B7280;
+      --border: #E2E5EA;
+      --danger: #DC2626;
+      --success-bg: #E8F7EE;
+      --success-text: #15803D;
+      --pending-bg: #FEF3E2;
+      --pending-text: #B45309;
+    }
     * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
-      background: #f4f5f7;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+      background: var(--canvas);
       margin: 0;
-      padding: 24px 16px 80px;
-      color: #222;
+      padding: 0 16px 80px;
+      color: var(--text);
     }
+    button, input, select, textarea { font-family: inherit; }
+
+    .topbar {
+      background: var(--ink);
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      margin: 0 -16px;
+    }
+    .topbar-logo { height: 22px; display: block; }
+    .topbar-accent { height: 3px; background: var(--brand-blue); margin: 0 -16px 24px; }
+    .logout-btn {
+      background: transparent;
+      color: #C9D6E8;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
     .container {
       max-width: 640px;
       margin: 0 auto;
     }
     h1 {
       font-size: 20px;
-      font-weight: 600;
+      font-weight: 700;
       margin: 0 0 4px;
+      letter-spacing: -0.2px;
     }
     .subtitle {
       font-size: 13px;
-      color: #777;
+      color: var(--text-muted);
       margin-bottom: 20px;
     }
     .card {
-      background: #fff;
-      border: 1px solid #e3e3e6;
-      border-radius: 10px;
-      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
       margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 4px 12px rgba(16,24,40,0.04);
     }
     .card h2 {
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       margin: 0 0 14px;
       padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.1px;
     }
     label {
       display: block;
       font-size: 13px;
       font-weight: 600;
-      margin: 12px 0 6px;
-      color: #444;
+      margin: 14px 0 6px;
+      color: #3A3D44;
     }
     label:first-of-type { margin-top: 0; }
+    .row > div > label { margin-top: 14px; }
+    label.required::after { content: ' *'; color: var(--danger); font-weight: 700; }
     select, input[type=text], input[type=password], textarea {
       width: 100%;
-      padding: 9px 10px;
+      padding: 10px 12px;
       font-size: 14px;
-      border: 1px solid #d4d4d8;
-      border-radius: 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       background: #fff;
-      font-family: inherit;
+      color: var(--text);
     }
     select:disabled, input:disabled {
-      background: #f0f0f1;
-      color: #888;
+      background: #F4F5F7;
+      color: #9CA3AF;
     }
-    textarea { resize: vertical; min-height: 60px; }
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(0,118,254,0.15);
+    }
+    button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--brand-blue);
+      outline-offset: 2px;
+    }
+    textarea { resize: vertical; min-height: 64px; }
     .row { display: flex; gap: 10px; }
-    .row > div { flex: 1; }
+    .row > div { flex: 1; min-width: 0; }
+    @media (max-width: 480px) {
+      .row { flex-direction: column; }
+    }
     button {
       cursor: pointer;
-      font-family: inherit;
       font-size: 14px;
-      border-radius: 6px;
+      font-weight: 600;
+      border-radius: 8px;
       border: none;
-      padding: 10px 16px;
+      padding: 11px 16px;
+      min-height: 42px;
+      transition: background-color .15s ease;
     }
     .btn-primary {
-      background: #2f6fed;
+      background: var(--brand-blue);
       color: #fff;
-      font-weight: 600;
       width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .btn-primary:disabled { background: #aac0ee; cursor: default; }
+    .btn-primary:hover:not(:disabled) { background: var(--brand-blue-dark); }
+    .btn-primary:disabled { background: #AFCBF2; cursor: default; }
     .btn-secondary {
-      background: #eef1f6;
-      color: #2f6fed;
-      font-weight: 600;
+      background: var(--brand-blue-tint);
+      color: var(--brand-blue-dark);
       width: 100%;
       margin-top: 6px;
     }
+    .btn-secondary:hover { background: #DCEBFF; }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.45);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .subject-row {
       position: relative;
-      border: 1px solid #e6e6ea;
-      border-radius: 8px;
-      padding: 18px 44px 16px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 44px 16px 16px;
       margin-bottom: 12px;
-      background: #fafbfc;
+      background: #FAFBFC;
     }
     .row-close-btn {
       position: absolute;
       top: 10px;
       right: 10px;
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
+      min-height: 0;
       border-radius: 50%;
-      background: #f1f1f3;
-      color: #999;
+      background: #F1F1F3;
+      color: #9CA3AF;
       font-size: 13px;
       line-height: 1;
       padding: 0;
     }
-    .row-close-btn:hover { background: #e6e6ea; color: #555; }
+    .row-close-btn:hover { background: #E6E6EA; color: #555; }
     .reason-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 5px 0;
+      padding: 6px 0;
       font-size: 13px;
     }
     .reason-item input { width: auto; }
     .reason-item label { margin: 0; font-weight: 400; }
     .reason-detail { margin: 4px 0 4px 22px; }
     .error-msg {
-      color: #d23f3f;
+      color: var(--danger);
       font-size: 13px;
       margin-top: 10px;
       display: none;
     }
     .login-box {
       max-width: 360px;
-      margin: 60px auto 0;
+      margin: 56px auto 0;
     }
-    #doneScreen { display: none; text-align: center; padding: 60px 0; }
-    #doneScreen .icon { font-size: 40px; }
+    #loginScreen, #formScreen, #doneScreen { transition: opacity .2s ease; opacity: 1; }
+    #doneScreen { display: none; text-align: center; padding: 60px 0; opacity: 0; }
+    #doneScreen .icon { margin-bottom: 14px; }
   </style>
 </head>
 <body>
+
+  <div class="topbar">
+    <img class="topbar-logo" src="data:image/png;base64,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" alt="megastudy">
+    <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display:none">로그아웃</button>
+  </div>
+  <div class="topbar-accent"></div>
+
   <div class="container">
 
     <!-- 로그인 화면 -->
     <div id="loginScreen" class="login-box">
       <div class="card">
-        <h2>수강과목 변경신청서</h2>
+        <h2>수업 변경신청서</h2>
         <label>아이디</label>
         <input type="text" id="loginId">
         <label>비밀번호</label>
         <input type="password" id="loginPw">
         <div class="error-msg" id="loginError">아이디 또는 비밀번호가 올바르지 않습니다.</div>
-        <button class="btn-primary" style="margin-top:16px" onclick="login()" id="loginBtn">로그인</button>
+        <button class="btn-primary" style="margin-top:16px" onclick="login()" id="loginBtn">
+          <span class="spinner" id="loginSpinner" style="display:none"></span>로그인
+        </button>
       </div>
     </div>
 
     <!-- 신청서 화면 -->
-    <div id="formScreen" style="display:none">
-      <h1>수강과목 변경신청서</h1>
-      <div class="subtitle">담임 → 학생을 선택하고, 변경할 수업을 추가해주세요.</div>
+    <div id="formScreen" style="display:none; opacity:0">
+      <h1>수업 변경신청서</h1>
+      <div class="subtitle">담임 → 학생 → 수업을 차례로 선택해주세요.</div>
 
       <div class="card">
         <h2>기본 정보</h2>
-        <label>담임선생님</label>
+        <label class="required">담임선생님</label>
         <select id="teacherSelect" onchange="onTeacherChange()">
           <option value="">선택하세요</option>
         </select>
@@ -164,7 +251,7 @@
         <label>반</label>
         <input type="text" id="classNameField" disabled placeholder="담임 선택 시 자동 입력됩니다">
 
-        <label>학생명</label>
+        <label class="required">학생명</label>
         <select id="studentSelect">
           <option value="">반을 먼저 선택하세요</option>
         </select>
@@ -182,12 +269,19 @@
       </div>
 
       <div class="error-msg" id="submitError"></div>
-      <button class="btn-primary" onclick="submitForm()" id="submitBtn">제출하기</button>
+      <button class="btn-primary" onclick="submitForm()" id="submitBtn">
+        <span class="spinner" id="submitSpinner" style="display:none"></span>제출하기
+      </button>
     </div>
 
     <!-- 제출 완료 화면 -->
     <div id="doneScreen">
-      <div class="icon">✅</div>
+      <div class="icon">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="26" stroke="#0076FE" stroke-width="2.5"/>
+          <path d="M17 29l7 7 15-16" stroke="#0076FE" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
       <h2>신청이 접수되었습니다</h2>
       <p class="subtitle">같은 담임선생님으로 다른 학생을 추가 신청하려면 아래 버튼을 눌러주세요.</p>
       <button class="btn-secondary" style="max-width:240px;margin:0 auto" onclick="resetForNext()">다음 신청 작성하기</button>
@@ -197,7 +291,7 @@
 
   <script>
     /* ====== 이 줄만 본인의 Apps Script 웹 앱 URL로 교체하세요 ====== */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwtyjsbnuSkovtq_ZbiHryI2eP9GfJ5EdXbBNRxktQa7VXs5-k2RFnifEIx9psWf19O/exec';
+    const API_URL = '1p_Plwu_Vg2jubv8fvTs6UbpM57uTBwfMhW19DrceX54';
     /* ============================================================ */
 
     let masterData = { teachers: [], students: [], courses: [] };
@@ -214,8 +308,22 @@
       { value: '기타', detail: true, placeholder: '상세 내용 입력' }
     ];
 
+    /* ---------------- 화면 전환 ---------------- */
+    function switchScreen(hideId, showId) {
+      if (hideId) {
+        const hideEl = document.getElementById(hideId);
+        hideEl.style.opacity = '0';
+        setTimeout(function () { hideEl.style.display = 'none'; }, 200);
+      }
+      const showEl = document.getElementById(showId);
+      showEl.style.display = 'block';
+      showEl.style.opacity = '0';
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { showEl.style.opacity = '1'; });
+      });
+    }
+
     /* ---------------- API 통신 ---------------- */
-    // POST는 Content-Type을 text/plain으로 보내야 Apps Script와의 CORS 문제가 생기지 않는다.
     function apiPost(action, fields) {
       const body = Object.assign({ action: action }, fields);
       return fetch(API_URL, {
@@ -234,6 +342,7 @@
       const id = document.getElementById('loginId').value.trim();
       const pw = document.getElementById('loginPw').value;
       document.getElementById('loginBtn').disabled = true;
+      document.getElementById('loginSpinner').style.display = 'inline-block';
       apiPost('login', { id: id, pw: pw })
         .then(function (res) { onLoginResult(res.success); })
         .catch(onServerError);
@@ -241,13 +350,18 @@
 
     function onLoginResult(ok) {
       document.getElementById('loginBtn').disabled = false;
+      document.getElementById('loginSpinner').style.display = 'none';
       if (!ok) {
         document.getElementById('loginError').style.display = 'block';
         return;
       }
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('formScreen').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+      switchScreen('loginScreen', 'formScreen');
       loadMasterData();
+    }
+
+    function logout() {
+      location.reload();
     }
 
     /* ---------------- 마스터데이터 로드 ---------------- */
@@ -313,8 +427,8 @@
 
       wrap.innerHTML =
         '<button class="row-close-btn" type="button" onclick="removeSubjectRow(\'' + rowId + '\')">\u2715</button>' +
-        '<label>신청구분</label><select class="f-type"></select>' +
-        '<label>과목분류</label><select class="f-category"></select>' +
+        '<label class="required">신청구분</label><select class="f-type"></select>' +
+        '<label class="required">과목분류</label><select class="f-category"></select>' +
         '<div class="row">' +
           '<div><label>변경 전 과목</label><select class="f-before"></select></div>' +
           '<div><label>변경 후 과목</label><select class="f-after"></select></div>' +
@@ -468,6 +582,7 @@
       };
 
       document.getElementById('submitBtn').disabled = true;
+      document.getElementById('submitSpinner').style.display = 'inline-block';
       apiPost('submit', payload)
         .then(function (res) {
           if (res.success) onSubmitSuccess(); else onSubmitError(res.error || '제출에 실패했습니다.');
@@ -483,30 +598,31 @@
 
     function onSubmitSuccess() {
       document.getElementById('submitBtn').disabled = false;
-      document.getElementById('formScreen').style.display = 'none';
-      document.getElementById('doneScreen').style.display = 'block';
+      document.getElementById('submitSpinner').style.display = 'none';
+      switchScreen('formScreen', 'doneScreen');
     }
 
     function onSubmitError(err) {
       document.getElementById('submitBtn').disabled = false;
+      document.getElementById('submitSpinner').style.display = 'none';
       showError('제출 중 오류가 발생했습니다: ' + (err && err.message ? err.message : err));
     }
 
     function onServerError(err) {
+      document.getElementById('loginBtn').disabled = false;
+      document.getElementById('loginSpinner').style.display = 'none';
       alert('서버 통신 중 오류가 발생했습니다: ' + (err && err.message ? err.message : err));
     }
 
     /* ---------------- 다음 신청 작성 ---------------- */
     function resetForNext() {
-      document.getElementById('doneScreen').style.display = 'none';
-      document.getElementById('formScreen').style.display = 'block';
-
       document.getElementById('studentSelect').innerHTML = '<option value="">반을 먼저 선택하세요</option>';
       document.getElementById('subjectList').innerHTML = '';
       subjectRowCount = 0;
       addSubjectRow();
       document.getElementById('commentField').value = '';
 
+      switchScreen('doneScreen', 'formScreen');
       onTeacherChange();
     }
   </script>
