@@ -236,7 +236,7 @@
   <div id="loginScreen" class="login-wrap">
     <div class="login-box">
       <div class="card">
-        <h2>수강과목 변경신청서</h2>
+        <h2>수업 변경신청서</h2>
         <label>아이디</label>
         <input type="text" id="loginId">
         <label>비밀번호</label>
@@ -306,7 +306,7 @@
 
   <script>
     /* ====== 이 줄만 본인의 Apps Script 웹 앱 URL로 교체하세요 ====== */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxcZNG0gPOllmwXEA6-nZJmp1LjvYXuf_j9sQv3G_l1jZ1pfAokXhVJ9EQ5ifvwtXnN/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz9L8VnJSM77pu-kvNqRdIt6XeSxmJCayCr61dUchxChbZTEruqFDa98w_9MQ5k_QjI/exec';
     /* ============================================================ */
 
     let masterData = { teachers: [], students: [], courses: [] };
@@ -599,11 +599,55 @@
 
       document.getElementById('submitBtn').disabled = true;
       document.getElementById('submitSpinner').style.display = 'inline-block';
-      apiPost('submit', payload)
-        .then(function (res) {
-          if (res.success) onSubmitSuccess(); else onSubmitError(res.error || '제출에 실패했습니다.');
-        })
+      submitViaHiddenForm(payload)
+        .then(function () { onSubmitSuccess(); })
         .catch(onSubmitError);
+    }
+
+    /* CORS 정책의 영향을 받지 않는 숨김 iframe + form 제출 방식.
+       Apps Script 웹 앱이 POST 응답에 CORS 헤더를 안정적으로 주지 않는
+       경우가 있어, fetch 대신 일반 폼 전송으로 우회한다. 응답 내용은
+       읽을 수 없으므로, 화면에서 미리 끝낸 검증을 신뢰하고 전송 완료
+       시점에 성공으로 처리한다. */
+    function submitViaHiddenForm(payload) {
+      return new Promise(function (resolve, reject) {
+        const frameName = 'submitFrame_' + Date.now();
+        const iframe = document.createElement('iframe');
+        iframe.name = frameName;
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = API_URL;
+        form.target = frameName;
+        form.style.display = 'none';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'payload';
+        input.value = JSON.stringify(Object.assign({ action: 'submit' }, payload));
+        form.appendChild(input);
+        document.body.appendChild(form);
+
+        const cleanup = function () {
+          form.remove();
+          setTimeout(function () { iframe.remove(); }, 500);
+        };
+
+        const timeoutId = setTimeout(function () {
+          cleanup();
+          reject(new Error('응답이 없습니다. 인터넷 연결을 확인해주세요.'));
+        }, 15000);
+
+        iframe.onload = function () {
+          clearTimeout(timeoutId);
+          cleanup();
+          resolve();
+        };
+
+        form.submit();
+      });
     }
 
     function showError(msg) {
