@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>수업 변경신청서</title>
+  <title>수강과목 변경신청서</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <style>
     :root {
@@ -203,6 +203,111 @@
       margin-top: 10px;
       display: none;
     }
+
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 10px 4px;
+      margin-right: 18px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      min-height: 0;
+    }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--brand-blue); }
+
+    .approval-filter { display: flex; gap: 8px; margin-bottom: 14px; }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      min-height: 0;
+      border-radius: 20px;
+    }
+    .filter-btn.active { background: var(--brand-blue); color: #fff; border-color: var(--brand-blue); }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 32px 0;
+    }
+    .approval-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+    }
+    .approval-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .approval-card-head .muted { color: var(--text-muted); font-size: 13px; }
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge-pending { background: var(--pending-bg); color: var(--pending-text); }
+    .badge-success { background: var(--success-bg); color: var(--success-text); }
+    .badge-danger { background: #FDECEC; color: var(--danger); }
+    .approval-subject-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+      padding: 4px 0;
+    }
+    .approval-subject-row .tag {
+      background: var(--brand-blue-tint);
+      color: var(--brand-blue-dark);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .approval-subject-reason { font-size: 12px; color: var(--text-muted); padding: 0 0 6px 2px; }
+    .approval-note {
+      font-size: 13px;
+      color: var(--text-muted);
+      background: #FAFBFC;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-top: 8px;
+    }
+    .approval-actions { margin-top: 14px; }
+    .approval-memo {
+      width: 100%;
+      min-height: 44px;
+      margin-bottom: 10px;
+    }
+    .approval-buttons { display: flex; gap: 8px; }
+    .approval-buttons button { flex: 1; min-height: 40px; }
+    .btn-approve { background: var(--brand-blue); color: #fff; }
+    .btn-approve:hover:not(:disabled) { background: var(--brand-blue-dark); }
+    .btn-reject { background: #fff; color: var(--danger); border: 1px solid var(--danger); }
+    .btn-reject:hover:not(:disabled) { background: #FDECEC; }
+
     .login-wrap {
       min-height: calc(100vh - 59px);
       display: flex;
@@ -236,7 +341,7 @@
   <div id="loginScreen" class="login-wrap">
     <div class="login-box">
       <div class="card">
-        <h2>수업 변경신청서</h2>
+        <h2>수강과목 변경신청서</h2>
         <label>아이디</label>
         <input type="text" id="loginId">
         <label>비밀번호</label>
@@ -253,40 +358,66 @@
 
     <!-- 신청서 화면 -->
     <div id="formScreen" style="display:none; opacity:0">
-      <h1>수업 변경신청서</h1>
-      <div class="subtitle">담임 → 학생 → 변경할 수업을 차례대로 선택해주세요.</div>
-
-      <div class="card">
-        <h2>기본 정보</h2>
-        <label class="required">담임선생님</label>
-        <select id="teacherSelect" onchange="onTeacherChange()">
-          <option value="">선택하세요</option>
-        </select>
-
-        <label>반</label>
-        <input type="text" id="classNameField" disabled placeholder="담임 선택 시 자동 입력됩니다">
-
-        <label class="required">학생명</label>
-        <select id="studentSelect">
-          <option value="">반을 먼저 선택하세요</option>
-        </select>
+      <div class="tab-nav">
+        <button class="tab-btn active" id="tabBtnForm" onclick="switchTab('form')">신청서 작성</button>
+        <button class="tab-btn" id="tabBtnApproval" onclick="switchTab('approval')">승인 대기함</button>
       </div>
 
-      <div class="card">
-        <h2>수업 변경 내용</h2>
-        <div id="subjectList"></div>
-        <button class="btn-secondary" onclick="addSubjectRow()">+ 과목 추가</button>
+      <div id="formTab">
+        <h1>수강과목 변경신청서</h1>
+        <div class="subtitle">담임 → 학생을 선택하고, 변경할 수업을 추가해주세요.</div>
+
+        <div class="card">
+          <h2>기본 정보</h2>
+          <label class="required">담임선생님</label>
+          <select id="teacherSelect" onchange="onTeacherChange()">
+            <option value="">선택하세요</option>
+          </select>
+
+          <label>반</label>
+          <input type="text" id="classNameField" disabled placeholder="담임 선택 시 자동 입력됩니다">
+
+          <label class="required">학생명</label>
+          <select id="studentSelect">
+            <option value="">반을 먼저 선택하세요</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <h2>수업 변경 내용</h2>
+          <div id="subjectList"></div>
+          <button class="btn-secondary" onclick="addSubjectRow()">+ 과목 추가</button>
+        </div>
+
+        <div class="card">
+          <h2>담임선생님 전달사항</h2>
+          <textarea id="commentField" placeholder="선택 입력"></textarea>
+        </div>
+
+        <div class="error-msg" id="submitError"></div>
+        <button class="btn-primary" onclick="submitForm()" id="submitBtn">
+          <span class="spinner" id="submitSpinner" style="display:none"></span>제출하기
+        </button>
       </div>
 
-      <div class="card">
-        <h2>담임선생님 전달사항</h2>
-        <textarea id="commentField" placeholder="선택 입력"></textarea>
-      </div>
+      <div id="approvalTab" style="display:none">
+        <h1>승인 대기함</h1>
+        <div class="subtitle">본인 반 학생들의 신청 내역을 확인하고 승인·반려할 수 있습니다.</div>
 
-      <div class="error-msg" id="submitError"></div>
-      <button class="btn-primary" onclick="submitForm()" id="submitBtn">
-        <span class="spinner" id="submitSpinner" style="display:none"></span>제출하기
-      </button>
+        <div class="card">
+          <h2>담임선생님</h2>
+          <select id="approvalTeacherSelect" onchange="loadApprovalList()">
+            <option value="">선택하세요</option>
+          </select>
+        </div>
+
+        <div class="approval-filter">
+          <button class="filter-btn active" data-mode="pending" onclick="setApprovalFilter('pending')">대기중</button>
+          <button class="filter-btn" data-mode="history" onclick="setApprovalFilter('history')">처리 이력</button>
+        </div>
+
+        <div id="approvalList"><div class="empty-state">담임선생님을 선택하세요.</div></div>
+      </div>
     </div>
 
     <!-- 제출 완료 화면 -->
@@ -388,14 +519,13 @@
       masterData = data;
 
       const teacherSelect = document.getElementById('teacherSelect');
+      const approvalTeacherSelect = document.getElementById('approvalTeacherSelect');
       const seen = {};
       masterData.teachers.forEach(function (t) {
         if (seen[t.teacherName]) return;
         seen[t.teacherName] = true;
-        const opt = document.createElement('option');
-        opt.value = t.teacherName;
-        opt.textContent = t.teacherName;
-        teacherSelect.appendChild(opt);
+        teacherSelect.appendChild(new Option(t.teacherName, t.teacherName));
+        approvalTeacherSelect.appendChild(new Option(t.teacherName, t.teacherName));
       });
 
       addSubjectRow();
@@ -599,7 +729,7 @@
 
       document.getElementById('submitBtn').disabled = true;
       document.getElementById('submitSpinner').style.display = 'inline-block';
-      submitViaHiddenForm(payload)
+      postViaHiddenForm('submit', payload)
         .then(function () { onSubmitSuccess(); })
         .catch(onSubmitError);
     }
@@ -609,9 +739,9 @@
        경우가 있어, fetch 대신 일반 폼 전송으로 우회한다. 응답 내용은
        읽을 수 없으므로, 화면에서 미리 끝낸 검증을 신뢰하고 전송 완료
        시점에 성공으로 처리한다. */
-    function submitViaHiddenForm(payload) {
+    function postViaHiddenForm(action, payload) {
       return new Promise(function (resolve, reject) {
-        const frameName = 'submitFrame_' + Date.now();
+        const frameName = 'frame_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
         const iframe = document.createElement('iframe');
         iframe.name = frameName;
         iframe.style.display = 'none';
@@ -626,7 +756,7 @@
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'payload';
-        input.value = JSON.stringify(Object.assign({ action: 'submit' }, payload));
+        input.value = JSON.stringify(Object.assign({ action: action }, payload));
         form.appendChild(input);
         document.body.appendChild(form);
 
@@ -684,6 +814,132 @@
 
       switchScreen('doneScreen', 'formScreen');
       onTeacherChange();
+    }
+
+    /* ---------------- 탭 전환 (신청서 작성 / 승인 대기함) ---------------- */
+    function switchTab(tab) {
+      document.getElementById('formTab').style.display = tab === 'form' ? 'block' : 'none';
+      document.getElementById('approvalTab').style.display = tab === 'approval' ? 'block' : 'none';
+      document.getElementById('tabBtnForm').classList.toggle('active', tab === 'form');
+      document.getElementById('tabBtnApproval').classList.toggle('active', tab === 'approval');
+    }
+
+    /* ---------------- 담임 승인 대기함 ---------------- */
+    let approvalFilterMode = 'pending';
+
+    function setApprovalFilter(mode) {
+      approvalFilterMode = mode;
+      document.querySelectorAll('.filter-btn').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      loadApprovalList();
+    }
+
+    function loadApprovalList() {
+      const teacher = document.getElementById('approvalTeacherSelect').value;
+      const listEl = document.getElementById('approvalList');
+      if (!teacher) {
+        listEl.innerHTML = '<div class="empty-state">담임선생님을 선택하세요.</div>';
+        return;
+      }
+      listEl.innerHTML = '<div class="empty-state">불러오는 중...</div>';
+
+      fetch(API_URL + '?action=requests&teacher=' + encodeURIComponent(teacher))
+        .then(function (res) { return res.json(); })
+        .then(function (rows) {
+          const filtered = rows.filter(function (r) {
+            return approvalFilterMode === 'pending' ? r.status === '담임승인대기' : r.status !== '담임승인대기';
+          });
+          renderApprovalList(filtered);
+        })
+        .catch(function () {
+          listEl.innerHTML = '<div class="empty-state">목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>';
+        });
+    }
+
+    function escapeHtml_(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    function renderApprovalList(rows) {
+      const listEl = document.getElementById('approvalList');
+      listEl.innerHTML = '';
+      if (rows.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">표시할 신청 내역이 없습니다.</div>';
+        return;
+      }
+
+      const groups = {};
+      const order = [];
+      rows.forEach(function (r) {
+        if (!groups[r.requestId]) { groups[r.requestId] = []; order.push(r.requestId); }
+        groups[r.requestId].push(r);
+      });
+
+      order.forEach(function (requestId) {
+        const items = groups[requestId];
+        const first = items[0];
+
+        let subjectsHtml = '';
+        items.forEach(function (it) {
+          const fromTo = it.type === '추가' ? (escapeHtml_(it.after) + ' 추가')
+            : it.type === '삭제' ? (escapeHtml_(it.before) + ' 삭제')
+            : (escapeHtml_(it.before) + ' → ' + escapeHtml_(it.after));
+          subjectsHtml +=
+            '<div class="approval-subject-row"><span class="tag">' + escapeHtml_(it.category) + '</span><span>' + fromTo + '</span></div>';
+          if (it.reasons) {
+            subjectsHtml += '<div class="approval-subject-reason">사유: ' + escapeHtml_(it.reasons) + '</div>';
+          }
+        });
+
+        const statusBadgeClass = first.status === '반려' ? 'badge-danger'
+          : first.status === '처리완료' ? 'badge-success' : 'badge-pending';
+
+        const card = document.createElement('div');
+        card.className = 'approval-card';
+        card.innerHTML =
+          '<div class="approval-card-head">' +
+            '<div><strong>' + escapeHtml_(first.studentName) + '</strong> <span class="muted">' +
+              escapeHtml_(first.className) + ' · 학번 ' + escapeHtml_(first.studentId) + '</span></div>' +
+            '<span class="badge ' + statusBadgeClass + '">' + escapeHtml_(first.status) + '</span>' +
+          '</div>' +
+          '<div class="approval-subjects">' + subjectsHtml + '</div>' +
+          (first.studentNote ? '<div class="approval-note">학생 비고: ' + escapeHtml_(first.studentNote) + '</div>' : '') +
+          (first.teacherMemo ? '<div class="approval-note">담임 메모: ' + escapeHtml_(first.teacherMemo) + '</div>' : '');
+
+        if (approvalFilterMode === 'pending') {
+          const actionWrap = document.createElement('div');
+          actionWrap.className = 'approval-actions';
+          actionWrap.innerHTML =
+            '<textarea class="approval-memo" placeholder="메모 (선택)"></textarea>' +
+            '<div class="approval-buttons">' +
+              '<button class="btn-reject" type="button">반려</button>' +
+              '<button class="btn-approve" type="button">승인</button>' +
+            '</div>';
+          const memoEl = actionWrap.querySelector('.approval-memo');
+          actionWrap.querySelector('.btn-approve').onclick = function () {
+            decide(requestId, '승인', memoEl.value, card);
+          };
+          actionWrap.querySelector('.btn-reject').onclick = function () {
+            decide(requestId, '반려', memoEl.value, card);
+          };
+          card.appendChild(actionWrap);
+        }
+
+        listEl.appendChild(card);
+      });
+    }
+
+    function decide(requestId, decision, memo, cardEl) {
+      cardEl.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+      postViaHiddenForm('teacherDecision', { requestId: requestId, decision: decision, memo: memo })
+        .then(function () { loadApprovalList(); })
+        .catch(function (err) {
+          alert('처리 중 오류가 발생했습니다: ' + err.message);
+          cardEl.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+        });
     }
   </script>
 </body>
